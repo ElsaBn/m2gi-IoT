@@ -69,21 +69,69 @@ Après ça je peux écrire dans le terminal où le make à été lancé. On peut
 
 
 ###### Questions à poser :
-- Pourquoi j'ai l'erreur indiquée dans la section lancement ? Test avec utilisation du script linker du cours : fonctionne.
-- Est-ce que pulse audio est un problème/faut-il le désactiver (comment) ?
-- Est-ce que le comportement obtenu (écriture des caractères fait continuer sur la ligne et à l'entrée reviens au début de la ligne) est correct ?
+- Pourquoi j'ai l'erreur indiquée dans la section lancement ? Test avec utilisation du script linker du cours : fonctionne. -> Peut-être problème version compilateur (à regarder).
+- Est-ce que pulse audio est un problème/faut-il le désactiver (comment) ? -> Pas de problème.
+- Est-ce que le comportement obtenu (écriture des caractères fait continuer sur la ligne et à l'entrée reviens au début de la ligne) est correct ? -> à priori oui.
 
 ###### Notes :
 Sur mandelbrot : utilisation script linker diapo 17.
 
 Commandes : 
 - make debug 
-- gdb build/kernel.elf
+- gdb build/kernel.elf (autre terminal)
 	- tar rem :1234
 	- br _start
 	
 Sur mandelbrot faire : gdb-multiarch -ex "target remote localhost:1234" build/kernel.elf
-	
+
+
+
+## Semaine 2
+
+
+
+### Nouveaux fichiers :
+[ISR : Interrupt Service Routine (gère les interruptions)]
+- *irq.s* : fichier assembleur pour la gestions des registres lors d'une interruption.
+- *isr.h* : header de *isr.c*, contient les signatures de fonctions concernant le VIC (Vectored Interrupt Controller)(setup, (dés)activation, chargement), celles concernant le coeur ((dés)activation manière globale) et des macro concernant les timers et UART (adresses et masques pour les interruptions).
+- *isr.c* : contient le corps des fonctions définies dans le .h et des appels à des fonctions externes définies dans le fichier assembleur. Un handler pour les callback est aussi présent.
+- *isr-mmio.h* : contient l'adresse de base pour le VIC et les offset de différents registres du VIC.
+
+### Complétion :
+Pour les adresses, offsets, masques : trouvables dans les docs correspondantes (souvent indiquées dans les fichiers). Attention, certaines docs peuvent se contredire (exemple VIC_BASE_ADDR) : se référer à celle de la carte qu'on manipule en priorité (en opposition à celle du composant car les fabriquants n'ont pas la vue sur comment ça sera utilisé).
+
+- *isr-mmio.h* : compléter adresse et offset.
+- *isr.h* : compléter les adresses et masques et définir le nombre maximum d'interruptions géré par le VIC (32 car la boucle de isr() était de 32 pour parcourir le handler).
+- *isr.c* : complétion des fonctions :
+	- isr() : reprise de l'exemple du cours : création fonction pour récupérer la liste des interruptions (load), pour vic_ack je ne sais pas par quoi remplacer (**note** : le cours indique "If you do not acknowledged, the device will never raise its interrupt again" -> comment ack ?).
+	- setup : il faut initialiser le hardware et le software donc utilisation de _irqs_setup() pour le 1er et pour le 2nd je ne sais pas.
+	- enable : écriture sur le registre VICINTENABLE de l'activation de l'interruption en utilisant un masque pour décaler et changer le bon bit. Un handler est passé en paramètre mais je ne comprends pas pourquoi
+	- disable : écriture sur le registre VICINTCLEAR en passant un 1 car sinon ne clear pas le bit (cf isr-mmio).
+
+- *main.c* : fonction start() : réutilisation jusqu'à uart_enable puis reprise de la version mise à jour du cours. Initalisation du vic, activation (**note**: que mettre comme paramètre de la fct enable (car pas de boutons et de leds) ? ), et activation des interruptions au niveau hardware avec core_enable. Boucle infinie avec core_halt()
+
+- *Makefile* : ajout irq.o et isr.o aux objs pour qu'il les ajoute lors de la compilation
+
+- *kernel.ld* : ajout build/irq.o(.text)
+
+Make avec ce qui a été completé : 1 erreur :
+*arm-none-eabi-ld: build/irq.o: in function '_irqs_disable': irq.s:56: undefined reference to `irq_stack_top'*
+
+Besoin ajout à la fin du kernel.ld. En relisant startup.s j'ai vu qu'il fallait enlever le set de CPSR_IRQ_FLAG pour autoriser les interruptions. ==> Make ok
+
+Essai de lancement avec gdb : n'arrive plus à se connecter (sûrement lié au -S cf : https://github.com/ilg-archived/qemu/issues/70 => ça fonctionnait avant (pourtant version 3.1.0 actuellement)). Evidemment si make run normal pas possible d'écrire puisque j'ai enlevé send/receive.
+
+**Note** : comment tester les interruptions ici en réalité ?
+
+###### Notes :
+Globalement pas compris ce qu'il fallait vraiment faire (cf par ex. le point sur isr).
+
+Quelle est l'utilisation des macro/masques UART et TIMER définit ? (Ici/dans le cours il n'y avait pas l'air d'en avoir besoin )
+
+
+
+
+
 
 
 
