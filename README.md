@@ -103,7 +103,7 @@ Pour les adresses, offsets, masques : trouvables dans les docs correspondantes (
 - *isr-mmio.h* : compléter adresse et offset.
 - *isr.h* : compléter les adresses et masques et définir le nombre maximum d'interruptions géré par le VIC (32 car la boucle de isr() était de 32 pour parcourir le handler).
 - *isr.c* : complétion des fonctions :
-	- isr() : reprise de l'exemple du cours : création fonction pour récupérer la liste des interruptions (load), pour vic_ack je ne sais pas par quoi remplacer (**note** : le cours indique "If you do not acknowledged, the device will never raise its interrupt again" -> comment ack ?).
+	- isr() : reprise de l'exemple du cours : création fonction pour récupérer la liste des interruptions (load), pour vic_ack je ne sais pas par quoi remplacer (**note** : le cours indique "If you do not acknowledged, the device will never raise its interrupt again" -> comment ack ? => pas bosin d'ack ici).
 	- setup : il faut initialiser le hardware et le software donc utilisation de _irqs_setup() pour le 1er et pour le 2nd je ne sais pas.
 	- enable : écriture sur le registre VICINTENABLE de l'activation de l'interruption en utilisant un masque pour décaler et changer le bon bit. Un handler est passé en paramètre mais je ne comprends pas pourquoi
 	- disable : écriture sur le registre VICINTCLEAR en passant un 1 car sinon ne clear pas le bit (cf isr-mmio).
@@ -127,6 +127,31 @@ Essai de lancement avec gdb : n'arrive plus à se connecter (sûrement lié au -
 Globalement pas compris ce qu'il fallait vraiment faire (cf par ex. le point sur isr).
 
 Quelle est l'utilisation des macro/masques UART et TIMER définit ? (Ici/dans le cours il n'y avait pas l'air d'en avoir besoin )
+
+
+
+## Semaine 3
+
+
+
+### But :
+Bien séparer la partie interruption du déroulement du programme normal (fonction *_start*).
+Lors d'une interruption, s'il y a des données qui sont envoyées pendant ce temps, les stocker dans un buffer circulaire. Lors de la reprise, la fonction read_listener indique qu'il y a des données disponibles. Le listener de write sera appelé lorsqu'il y a de la place pour écrire des octets, mais si une écriture à échouée précédemment parce qu'il n'y en avait plus.
+
+Il faut compléter les fonctions uart_init, _read et _write. La fonction *_init* prendra en paramètre des listeners callback read et write, le numéro de l'uart qui l'appelle et le cookie (buffer), et *_read/_write* renvoient un booléen quand ils ont accompli leur fonction.
+
+### Actuellement :
+
+Difficile de comprendre vraiment comment faire les choses. Récupération du code du cours :
+- *ring-buffer.c/.h* : contient le buffer circulaire pour stocker les données
+- structure *cookie* (main.h) : qui sert probablement à stocker les informations du buffer.
+- fonctions read_listener/writer_listener/write_amap (*main.c*): les listener servent pour lire/écrire dans/depuis le buffer, tant qu'il y a la place. Write_amap écrit dans le shell.
+- retour de la fonction uart_receive (passage de void à uint_8)
+
+### Ensuite :
+- Quelle est cette fonction shell ?
+- **Implémentation des fonctions uart nécessaires**.
+- La fonction beep n'est pas "trouvée" (*implicit declaration of function 'beep'*) mais quand passage de la souris dessus me donne ses informations.
 
 
 
