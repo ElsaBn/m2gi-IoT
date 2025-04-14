@@ -32,7 +32,7 @@ void read_listener(void *addr) {
     dropped = true;
   }
   if (dropped){
-    beep(); // signal dropped bytes...
+    //beep(); // signal dropped bytes...
   }
 }
 
@@ -45,12 +45,12 @@ void write_listener(void *addr) {
 void write_amap(struct cookie *cookie) {
   while (cookie->tail < cookie->head) {
     uint8_t code = cookie->line[cookie->tail];
-    if (!uart_write(cookie->uartno,code)){
-      return;
-    }
+    // if (!uart_write(cookie->uartno,code)){
+    //   return;
+    // }
     cookie->tail++;
     if (code == '\n') {
-      shell(cookie->line,cookie->head);
+      // shell(cookie->line,cookie->head);
       cookie->tail= cookie->head = 0;
       cookie->processing=false;
     }

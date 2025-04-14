@@ -40,7 +40,7 @@ struct handler handlers[NIRQS];
  * status and call the corresponding handlers.
  */
 void isr() {
-  // TODO
+  core_disable_irqs();
   uint32_t irqs = vic_load_irqs();
   for (uint32_t i=0 ; i<NIRQS ; i++) {
     struct handler* handler;
@@ -49,6 +49,7 @@ void isr() {
       handler->callback(i, handler->cookie);
     }
   }
+  core_enable_irqs();
   return;
   // panic();
 }
@@ -75,7 +76,9 @@ void core_halt() {
  * sides.
  */
 void vic_setup_irqs() {
-  // TODO
+  for (uint32_t i = 0; i < NIRQS; i++) {
+    vic_disable_irq(i);
+  }
   _irqs_setup();
   // comment faire niveau soft
   //panic();
@@ -86,7 +89,7 @@ void vic_setup_irqs() {
  */
 void vic_enable_irq(uint32_t irq, void (*callback)(uint32_t, void*), void *cookie) {
   //panic();
-  //pourquoi besoin du callback ?
+  handlers[irq] = (struct handler) {callback, cookie};
   mmio_write32((void*)VIC_BASE_ADDR, VICINTENABLE, 1 << irq);
 }
 

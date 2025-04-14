@@ -151,10 +151,29 @@ Difficile de comprendre vraiment comment faire les choses. Récupération du cod
 ### Ensuite :
 - Quelle est cette fonction shell ?
 - **Implémentation des fonctions uart nécessaires**.
-- La fonction beep n'est pas "trouvée" (*implicit declaration of function 'beep'*) mais quand passage de la souris dessus me donne ses informations.
+- La fonction beep n'est pas "trouvée" (*implicit declaration of function 'beep'*) mais quand passage de la souris dessus me donne ses informations. -> la commenter
 
 
 
+## Semaine 4
+
+Après le cours précédent beaucoup n'ont pas réussi -> continuer sur ce qu'on faisait à la base.
+
+Explication de l'utilisation des listeners (~cf semaine précédente)
+
+-> Idéal à la fin = programmation évenementiel.
+
+### Complétion dans step3
+
+Fin de interruptions :
+- *isr.c* :
+	- fonction isr : il faut désactiver les interruptions durant le traitement et les réactiver à la fin.
+	- vic_enable_irq : ajout du callback et cookie dans le handler.
+	- vic_setup_irqs : remise à 0 des interruptions.
+
+=> Je pensais pouvoir écrire dans le terminal comme au step 1 mais ne fonctionne toujours pas (ça fonctionnait chez les autres ?)
+
+Difficile de comprendre ce que je dois faire et je ne veux pas juste copier bêtement le code des autres. Sans exemple plus précis du cours ou une vraie solution je ne saurais pas faire.
 
 
 
